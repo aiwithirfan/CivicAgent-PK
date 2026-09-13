@@ -1,0 +1,9 @@
+streamlit
+audio-recorder-streamlit
+groq
+chromadb
+reportlab
+arabic-reshaper
+python-bidi
+crewai
+langchain-groq
