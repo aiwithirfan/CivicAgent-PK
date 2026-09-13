@@ -209,16 +209,20 @@ with col_left:
                 audio_file = io.BytesIO(st.session_state.audio_bytes)
                 audio_file.name = "recording.wav"
                 
-                with st.spinner("Transcribing your voice..."):
-                    transcription_result = transcribe_audio(audio_file)
+                with st.spinner("Transcribing your voice with Whisper API..."):
+                    try:
+                        transcription_result = transcribe_audio(audio_file)
+                    except Exception as e:
+                        transcription_result = {"success": False, "error": str(e)}
                     
-                if transcription_result.get("success"):
+                if transcription_result and transcription_result.get("success"):
                     final_text = transcription_result["text"]
                     lang = transcription_result.get("language", "Unknown")
                     source = f"Voice ({lang})"
                     st.success("Audio transcribed successfully!")
                 else:
-                    st.error(transcription_result.get("error", "Transcription failed."))
+                    err_msg = transcription_result.get("error", "Transcription failed.") if transcription_result else "Audio transcription service unavailable."
+                    st.error(err_msg)
                     final_text = None
             else:
                 st.error("Audio module is not available.")
