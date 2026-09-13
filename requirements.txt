@@ -1,5 +1,5 @@
 streamlit
-audio-recorder-streamlit
+audio-recorder-streamlit==0.0.8
 groq
 chromadb
 reportlab
