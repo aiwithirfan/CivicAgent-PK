@@ -17,7 +17,6 @@ import os
 import re
 
 from crewai import Agent, Crew, Process, Task
-from langchain_groq import ChatGroq
 
 
 # =========================================================
@@ -135,21 +134,18 @@ def run_civic_crew(
         }
 
     # -----------------------------------------------------
-    # LLM
+    # LLM SETUP FOR CREWAI
     # -----------------------------------------------------
 
     try:
-
-        llm = ChatGroq(
-            model=GROQ_MODEL,
-            temperature=0.2,
-            groq_api_key=api_key,
-        )
+        # Set environment variables for CrewAI native Groq support
+        os.environ["GROQ_API_KEY"] = api_key
+        llm = f"groq/{GROQ_MODEL}"
 
     except Exception as e:
 
         print(
-            f"Could not initialize Groq LLM: {e}"
+            f"Could not initialize LLM configuration: {e}"
         )
 
         return {
@@ -293,13 +289,11 @@ AVAILABLE POLICY CONTEXT:
 Your job:
 
 1. Determine which policy information is relevant.
-2. Identify whether the complaint is supported by "
-   available policy context.
+2. Identify whether the complaint is supported by available policy context.
 3. Identify any missing information.
 4. Confirm or correct the department.
 5. Confirm or correct the priority.
-6. Do not invent laws, rules, penalties or government "
-   procedures that are not present in the provided context.
+6. Do not invent laws, rules, penalties or government procedures that are not present in the provided context.
 
 Return ONLY valid JSON:
 
@@ -361,8 +355,7 @@ Requirements:
 4. Do not make unsupported legal claims.
 5. Do not invent case numbers or deadlines.
 6. Clearly acknowledge the citizen's complaint.
-7. The response must be suitable for a Pakistani "
-   municipal authority.
+7. The response must be suitable for a Pakistani municipal authority.
 8. Output ONLY valid JSON.
 
 Required format:
