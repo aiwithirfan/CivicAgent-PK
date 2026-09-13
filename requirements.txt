@@ -9,3 +9,4 @@ arabic-reshaper
 python-bidi
 python-dotenv
 setuptools
+litellm
