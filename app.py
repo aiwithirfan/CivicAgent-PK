@@ -341,11 +341,12 @@ def generate_pdf(response_data, complaint_text):
         return None
 
     try:
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        ref_no = f"CAK-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
         department = response_data.get(
             "department",
-            "Municipal Administration"
+            "Government of Pakistan — Municipal Services"
         )
 
         priority = response_data.get(
@@ -366,34 +367,34 @@ def generate_pdf(response_data, complaint_text):
             )
         )
 
-        # Create record according to common project structure.
+        # Create record matching ComplaintRecord structure in generate_report.py
         record = ComplaintRecord(
-            complaint_text=complaint_text,
-            department=department,
-            priority=priority,
-            category=category,
-            official_reply=official_reply,
-            created_at=timestamp,
+            reference_no=ref_no,
+            date_submitted=timestamp,
+            date_processed=timestamp,
+            citizen_name="Valued Citizen",
+            citizen_contact="N/A",
+            submission_channel="Web Portal",
+            detected_language="English",
+            complaint_text_en=complaint_text,
+            matched_department=department,
+            ai_category=category,
+            ai_priority=priority,
+            official_reply_en=official_reply,
+            status="Forwarded to Department",
         )
 
         generator = CivicComplaintPDFGenerator()
+        out_path = "temp_complaint_report.pdf"
+        generator.generate(record, out_path)
 
-        pdf_data = generator.generate(record)
+        with open(out_path, "rb") as f:
+            pdf_bytes = f.read()
 
-        if pdf_data is None:
-            return None
+        return pdf_bytes
 
-        if isinstance(pdf_data, bytes):
-            return pdf_data
-
-        if hasattr(pdf_data, "getvalue"):
-            return pdf_data.getvalue()
-
-        return bytes(pdf_data)
-
-    except Exception:
-        # Some PDF implementations use different constructor/methods.
-        # Do not crash the complete application.
+    except Exception as e:
+        print(f"PDF Generation Error: {e}")
         return None
 
 
@@ -446,7 +447,7 @@ def process_complaint(complaint_text):
         try:
             crew_result = run_civic_crew(
                 complaint_text=complaint_text,
-                context=rag_context,
+                retrieved_policies=rag_context,
             )
 
         except TypeError:
@@ -704,7 +705,6 @@ else:
 
                     try:
 
-                        # audio_recorder_streamlit normally returns WAV bytes
                         result = transcribe_audio(
                             audio_data
                         )
